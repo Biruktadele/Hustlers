@@ -17,9 +17,8 @@ async def main():
 
         # Define keywords for filtering
         keywords = [
-            "a",
             "software engineer", "mobile developer", "android", "ios", "flutter", "react native",
-            "backend developer", "backend engineer", "django", "flask", "node.js", "express"
+            "backend developer", "backend engineer", "django", "flask", "node.js" , "express"
         ]
 
         # Filter posts related to keywords
@@ -31,6 +30,7 @@ async def main():
             if any(keyword in text for keyword in keywords):
                 filtered_posts.append(post)
                 post["text"] = text[:-200]
+                print(post)
 
         # print("Filtered posts from yesterday (00:00 - 23:59) related to Software Engineering, Mobile Development, and Backend Development:")
         return filtered_posts
