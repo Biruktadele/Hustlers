@@ -4,7 +4,6 @@ from typing import List, Dict
 import asyncio
 import json
 from app.core.config import settings
-from app.services.ai_service import AIService
 from datetime import datetime
 
 class TelegramService:
