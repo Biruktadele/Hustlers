@@ -31,3 +31,6 @@ env.bak/
 venv.bak/
 
 .vscode/
+
+# Ignore Telegram session files
+session_name.session

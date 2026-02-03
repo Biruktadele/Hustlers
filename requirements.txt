@@ -1,2 +1,5 @@
 fastapi
 uvicorn[standard]
+google-generativeai
+sqlalchemy
+psycopg2-binary
