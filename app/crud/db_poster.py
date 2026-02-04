@@ -87,7 +87,7 @@ def cleanup_expired_jobs(db: Session) -> int:
         return 0
 
 
-def sync_job_posts():
+async def sync_job_posts():
     """Main task to fetch from Telegram, process with AI, and save to DB."""
     print("Fetching and processing job posts from AI service...")
     
@@ -96,7 +96,7 @@ def sync_job_posts():
     
     # Get processed job data from AI service
     try:
-        all_jobs_data = fetch_and_process_jobs()
+        all_jobs_data = await fetch_and_process_jobs()
         print(f"Retrieved {len(all_jobs_data)} job posts from AI service")
     except Exception as e:
         print(f"Error fetching job data from AI service: {e}")
@@ -218,3 +218,8 @@ def get_expired_jobs(db: Session) -> List[JobPost]:
             JobPost.posted_at < now - timedelta(days=30)  # Assume 30 days expiry
         )
     ).all()
+
+
+def get_all_jobs(db: Session) -> List[JobPost]:
+    """Get all job posts from the database"""
+    return db.query(JobPost).order_by(JobPost.posted_at.desc()).all()
