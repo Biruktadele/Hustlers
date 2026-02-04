@@ -6,15 +6,9 @@
       "use": "@vercel/python"
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "app/main.py"
-    }
-  ],
   "crons": [
     {
-      "path": "/api/sync-jobs",
+      "path": "/",
       "schedule": "0 0 * * *"
     }
   ]
