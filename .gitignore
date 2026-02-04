@@ -35,3 +35,4 @@ venv.bak/
 
 # Ignore Telegram session files
 session_name.session
+.vercel
