@@ -160,11 +160,11 @@ class AIService:
             "model_name": self.model_name,
         }
 
-def res():
+async def res():
     from app.services import fetch_afriworkamharic
     service = AIService()
     try:
-        ls = asyncio.run(fetch_afriworkamharic.main())
+        ls = await fetch_afriworkamharic.main()
     except Exception as e:
         print(f"Error fetching posts: {e}")
         return []
