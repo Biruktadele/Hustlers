@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_api_keys: str = ""  # Comma-separated list of keys
 
+    # GitHub API settings
+    github_token: str = ""
+
     class Config:
         env_file = os.path.join(os.path.dirname(__file__), "../../.env")
 
