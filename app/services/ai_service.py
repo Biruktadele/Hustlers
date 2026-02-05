@@ -61,12 +61,13 @@ class AIService:
         self._api_key_index = (self._api_key_index + 1) % len(self._api_keys)
         return self._configure_current_key()
 
-    def respond_to_input(self, user_input: str) -> str:
+    def respond_to_input(self, user_input: str, prompt_template: Optional[str] = None) -> str:
         """
         Takes a user input and returns a Gemini-generated response.
 
         Args:
             user_input (str): The input provided by the user.
+            prompt_template (Optional[str]): Custom prompt template. If provided, user_input will be appended.
 
         Returns:
             str: The AI's response.
@@ -74,14 +75,17 @@ class AIService:
         if not self._client:
             return "Gemini API key is missing. Set GEMINI_API_KEY or GEMINI_API_KEYS in your .env file."
 
-        prompt = (
-            "Extract job data from the user input and return STRICT JSON only. "
-            "No markdown, no extra text. Use these keys: "
-            "jobname, jobtype, price, expierdate, jobdescrbiton. jobdescrbiton should explain the job description very well. "
-            "use english for all the fields. even if its in amharic or any other language, translate it to english."
-            "If a field is missing, use an empty string.\n\n"
-            f"Input:\n{user_input}"
-        )
+        if prompt_template:
+            prompt = f"{prompt_template}\n\nInput:\n{user_input}"
+        else:
+            prompt = (
+                "Extract job data from the user input and return STRICT JSON only. "
+                "No markdown, no extra text. Use these keys: "
+                "jobname, jobtype, price, expierdate, jobdescrbiton. jobdescrbiton should explain the job description very well. "
+                "use english for all the fields. even if its in amharic or any other language, translate it to english."
+                "If a field is missing, use an empty string.\n\n"
+                f"Input:\n{user_input}"
+            )
 
         # Try with current key, and retry with other keys if quota exceeded
         max_retries = min(len(self._api_keys) * len(self._models), 10)  # Don't try more than available keys
