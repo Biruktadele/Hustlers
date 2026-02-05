@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+google-genai
+sqlalchemy
+psycopg2-binary
+telethon
+pydantic-settings
+python-dotenv
+httpx
+pdfplumber
+python-multipart
