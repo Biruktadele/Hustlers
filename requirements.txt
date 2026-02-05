@@ -6,3 +6,6 @@ psycopg2-binary
 telethon
 pydantic-settings
 python-dotenv
+httpx
+pdfplumber
+python-multipart
