@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     # Telegram API settings
     telegram_api_id: int = 0  # Replace with your API ID
     telegram_api_hash: str = ""  # Replace with your API Hash
+    telegram_session: str = ""  # StringSession for Telethon
 
     # Gemini API settings
     gemini_api_key: str = ""

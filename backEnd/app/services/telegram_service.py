@@ -1,4 +1,5 @@
 from telethon import TelegramClient
+from telethon.sessions import StringSession
 from telethon.tl.types import Channel
 from typing import List, Dict
 import asyncio
@@ -10,7 +11,9 @@ class TelegramService:
     def __init__(self):
         self.api_id = settings.telegram_api_id
         self.api_hash = settings.telegram_api_hash
-        self.client = TelegramClient('session_name', self.api_id, self.api_hash)
+        if not settings.telegram_session:
+            raise ValueError("TELEGRAM_SESSION is required for TelegramService")
+        self.client = TelegramClient(StringSession(settings.telegram_session), self.api_id, self.api_hash)
 
     async def get_group_posts(self, group_username: str, limit=None, date_range=None) -> List[Dict]:
 
