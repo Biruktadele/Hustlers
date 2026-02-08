@@ -4,13 +4,21 @@ import 'package:google_fonts/google_fonts.dart';
 class CompanyCard extends StatelessWidget {
   final String companyName;
   final String location;
+  final String companyType;
+  final String phoneNumber;
   final VoidCallback onViewDetail;
+  final VoidCallback onAction;
+  final IconData actionIcon;
 
   const CompanyCard({
     super.key,
     required this.companyName,
     required this.location,
+    required this.companyType,
+    required this.phoneNumber,
     required this.onViewDetail,
+    required this.onAction,
+    this.actionIcon = Icons.bookmark_border,
   });
 
   @override
@@ -24,6 +32,7 @@ class CompanyCard extends StatelessWidget {
         child: Column(
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
                   radius: 24,
@@ -46,28 +55,53 @@ class CompanyCard extends StatelessWidget {
                           color: Colors.black87,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      Text(
+                        companyType,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.deepPurple.shade400,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
                             location,
-                            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.phone, size: 14, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text(
+                            phoneNumber,
+                            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade600),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
+                IconButton(
+                  icon: Icon(actionIcon, color: Colors.grey),
+                  onPressed: onAction,
+                  tooltip: 'Action',
+                ),
               ],
             ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton(
+              child: ElevatedButton(
                 onPressed: onViewDetail,
-                style: OutlinedButton.styleFrom(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
                   foregroundColor: Colors.deepPurple,
                   side: const BorderSide(color: Colors.deepPurple),
                   shape: RoundedRectangleBorder(
