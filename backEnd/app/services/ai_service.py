@@ -164,29 +164,29 @@ class AIService:
             "model_name": self.model_name,
         }
 
-async def res():
-    from app.services import fetch_afriworkamharic
-    service = AIService()
-    try:
-        ls = await fetch_afriworkamharic.main()
-    except Exception as e:
-        print(f"Error fetching posts: {e}")
-        return []
+# async def res():
+#     from app.services.singelgroup import fetch_afriworkamharic
+#     service = AIService()
+#     try:
+#         ls = await fetch_afriworkamharic.main()
+#     except Exception as e:
+#         print(f"Error fetching posts: {e}")
+#         return []
         
-    posts = []
-    for post in ls:
-        response_text = service.respond_to_input(post['text'])
-        try:
-            if "error" in response_text:
-                continue
-            response = json.loads(response_text)
-            response["deep_link"] = post.get("deep_link")
-            response["date"] = post.get("date")
-            posts.append(response)
-            print(response)
-        except json.JSONDecodeError:
-            print(f"Failed to parse AI response: {response_text}")
-    return posts
+#     posts = []
+#     for post in ls:
+#         response_text = service.respond_to_input(post['text'])
+#         try:
+#             if "error" in response_text:
+#                 continue
+#             response = json.loads(response_text)
+#             response["deep_link"] = post.get("deep_link")
+#             response["date"] = post.get("date")
+#             posts.append(response)
+#             print(response)
+#         except json.JSONDecodeError:
+#             print(f"Failed to parse AI response: {response_text}")
+#     return posts
 
 if __name__ == "__main__":
     asyncio.run(res())
