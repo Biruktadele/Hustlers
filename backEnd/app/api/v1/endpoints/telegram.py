@@ -39,6 +39,11 @@ async def get_jobs():
     """
     try:
         jobs = await fetch_jobs()
-        return jobs
+
+        return {
+            "status_code": 200,
+            "status": "success",
+            "data": jobs
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching jobs: {str(e)}")
