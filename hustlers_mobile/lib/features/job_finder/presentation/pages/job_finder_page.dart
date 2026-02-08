@@ -1,11 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hustlers_mobile/features/saved/data/models/saved_job_model.dart';
+import 'package:hustlers_mobile/features/saved/presentation/providers/saved_jobs_provider.dart';
 import '../../../../core/presentation/widgets/custom_app_bar.dart';
 import '../widgets/job_card.dart';
 import '../widgets/company_card.dart';
+import '../providers/job_provider.dart';
 import 'job_detail_page.dart';
 
-class JobFinderPage extends StatelessWidget {
+class JobFinderPage extends ConsumerStatefulWidget {
   const JobFinderPage({super.key});
+
+  @override
+  ConsumerState<JobFinderPage> createState() => _JobFinderPageState();
+}
+
+class _JobFinderPageState extends ConsumerState<JobFinderPage> {
+  String selectedCity = "Addis Ababa";
+  final List<String> cities = [
+    "Addis Ababa",
+    "Adama",
+    "Hawassa",
+    "Bahir Dar",
+    "Dire Dawa",
+    "Asosa"
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +59,6 @@ class JobFinderPage extends StatelessWidget {
                   unselectedLabelColor: Colors.grey,
                   indicatorSize: TabBarIndicatorSize.tab,
                   dividerColor: Colors.transparent,
-                  // Remove the default overlay color if desired
                   overlayColor: WidgetStateProperty.all(Colors.transparent),
                   tabs: const [
                     Tab(
@@ -68,8 +86,8 @@ class JobFinderPage extends StatelessWidget {
             Expanded(
               child: TabBarView(
                 children: [
-                  _buildJobsList(context),
-                  _buildCompanyList(context),
+                   _buildJobsList(context, ref),
+                   _buildCompanyList(context),
                 ],
               ),
             ),
@@ -79,89 +97,208 @@ class JobFinderPage extends StatelessWidget {
     );
   }
 
-  Widget _buildJobsList(BuildContext context) {
-    // Mock Data for Jobs
-    final jobs = [
-      {
-        "title": "Senior Flutter Developer",
-        "company": "Tech Corp",
-        "location": "New York, USA",
-        "date": "2 days ago"
-      },
-      {
-        "title": "UI/UX Designer",
-        "company": "Creative Studio",
-        "location": "Remote",
-        "date": "5 hours ago"
-      },
-      {
-        "title": "Backend Engineer",
-        "company": "Data Systems",
-        "location": "San Francisco, CA",
-        "date": "1 week ago"
-      },
-    ];
+  Widget _buildJobsList(BuildContext context, WidgetRef ref) {
+    final jobsAsyncValue = ref.watch(jobListProvider);
+    final savedJobsAsync = ref.watch(savedJobsProvider);
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8, bottom: 80), // Bottom padding for navbar
-      itemCount: jobs.length,
-      itemBuilder: (context, index) {
-        final job = jobs[index];
-        return JobCard(
-          jobTitle: job['title']!,
-          companyName: job['company']!,
-          location: job['location']!,
-          date: job['date']!,
-          onViewDetail: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => JobDetailPage(title: job['title']!),
-              ),
-            );
-          },
-          onSave: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Job Saved!")),
-            );
-          },
-          onDelete: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Job Remove action clicked")),
+    return jobsAsyncValue.when(
+      data: (jobs) {
+        if (jobs.isEmpty) {
+          return const Center(child: Text("No jobs found"));
+        }
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          itemCount: jobs.length,
+          itemBuilder: (context, index) {
+            final job = jobs[index];
+            final isSaved = savedJobsAsync.asData?.value.any((s) => s.id == job.id) ?? false;
+            
+            return JobCard(
+              jobTitle: job.jobName,
+              companyName: "Hustlers", // Fallback as API doesn't provide company
+              location: "Addis Ababa", // Fallback
+              salary: _formatPrice(job.price),
+              date: job.postedAt != null ? job.postedAt!.split('T')[0] : "Recently",
+              actionIcon: isSaved ? Icons.bookmark : Icons.bookmark_border,
+              actionIconColor: isSaved ? Colors.deepPurple : Colors.grey,
+              onViewDetail: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => JobDetailPage(job: job),
+                  ),
+                );
+              },
+              onAction: () async {
+                if (isSaved) {
+                  await ref.read(savedJobsProvider.notifier).deleteJob(job.id);
+                   if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("${job.jobName} removed from favorites!")),
+                    );
+                  }
+                } else {
+                  final savedJob = SavedJobModel(
+                    id: job.id,
+                    jobName: job.jobName,
+                    jobType: job.jobType,
+                    price: job.price,
+                    deepLink: job.deepLink,
+                    jobDescription: job.jobDescription,
+                    expireDate: job.expireDate,
+                    postedAt: job.postedAt,
+                    status: "Saved",
+                  );
+                  await ref.read(savedJobsProvider.notifier).saveJob(savedJob);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("${job.jobName} saved to favorites!")),
+                    );
+                  }
+                }
+              },
             );
           },
         );
       },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text("Error: $error")),
     );
   }
 
+  String _formatPrice(String price) {
+    // Keep only digits, dots, commas, and dashes
+    final numeric = price.replaceAll(RegExp(r'[^0-9.,-]'), '');
+    return numeric.isEmpty ? price : numeric;
+  }
+
   Widget _buildCompanyList(BuildContext context) {
-    // Mock Data for Companies
-    final companies = [
-      {"name": "Google", "location": "Mountain View, CA"},
-      {"name": "Spotify", "location": "Stockholm, Sweden"},
-      {"name": "Microsoft", "location": "Redmond, WA"},
-      {"name": "Airbnb", "location": "San Francisco, CA"},
+    // Mock Data for Companies with Ethiopian Context
+    final allCompanies = [
+      {
+        "name": "Ethio Telecom",
+        "location": "Addis Ababa",
+        "type": "Telecommunications",
+        "phone": "+251 115 500 000"
+      },
+      {
+        "name": "Commercial Bank of Ethiopia",
+        "location": "Addis Ababa",
+        "type": "Finance",
+        "phone": "+251 115 515 004"
+      },
+      {
+        "name": "Kuriftu Resort",
+        "location": "Adama",
+        "type": "Hospitality",
+        "phone": "+251 221 119 090"
+      },
+      {
+        "name": "Haile Resort",
+        "location": "Hawassa",
+        "type": "Hospitality",
+        "phone": "+251 462 201 228"
+      },
+      {
+        "name": "Avanti Blue Nile",
+        "location": "Bahir Dar",
+        "type": "Hospitality",
+        "phone": "+251 582 204 200"
+      },
+       {
+        "name": "Dire Dawa Textile",
+        "location": "Dire Dawa",
+        "type": "Manufacturing",
+        "phone": "+251 251 112 345"
+      },
+       {
+        "name": "Grand Asosa Hotel",
+        "location": "Asosa",
+        "type": "Hospitality",
+        "phone": "+251 577 750 001"
+      },
     ];
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8, bottom: 80),
-      itemCount: companies.length,
-      itemBuilder: (context, index) {
-        final company = companies[index];
-        return CompanyCard(
-          companyName: company['name']!,
-          location: company['location']!,
-          onViewDetail: () {
-             Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => JobDetailPage(title: company['name']!),
+    // Filter based on selected city
+    // In a real app, you might strict filter. Here we ensure at least one matches or show all if city is "All" (if we had an All option)
+    // For now, let's just filter by the exact string. Use 'Addis Ababa' as default.
+    final companies = allCompanies.where((c) => c['location'] == selectedCity).toList();
+    // If empty for demo purposes fallback to all or empty list
+    final displayCompanies = companies.isEmpty ? allCompanies : companies;
+
+    return Column(
+      children: [
+        // City Selector
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
-            );
-          },
-        );
-      },
+            ],
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: selectedCity,
+              icon: const Icon(Icons.location_on, color: Colors.deepPurple),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+                fontFamily: 'Poppins', 
+              ),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    selectedCity = newValue;
+                  });
+                }
+              },
+              items: cities.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+        
+        // List
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.only(top: 8, bottom: 80),
+            itemCount: displayCompanies.length,
+            itemBuilder: (context, index) {
+              final company = displayCompanies[index];
+              return CompanyCard(
+                companyName: company['name']!,
+                location: company['location']!,
+                companyType: company['type']!,
+                phoneNumber: company['phone']!,
+                 onViewDetail: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Details for ${company['name']} coming soon!")),
+                  );
+                },
+                onAction: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Company Saved!")),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
