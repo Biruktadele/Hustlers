@@ -5,20 +5,24 @@ class JobCard extends StatelessWidget {
   final String jobTitle;
   final String companyName;
   final String location;
+  final String salary;
   final String date;
   final VoidCallback onViewDetail;
-  final VoidCallback onSave;
-  final VoidCallback onDelete;
+  final VoidCallback onAction;
+  final IconData actionIcon;
+  final Color actionIconColor;
 
   const JobCard({
     super.key,
     required this.jobTitle,
     required this.companyName,
     required this.location,
+    required this.salary,
     required this.date,
     required this.onViewDetail,
-    required this.onSave,
-    required this.onDelete,
+    required this.onAction,
+    this.actionIcon = Icons.bookmark_border,
+    this.actionIconColor = Colors.grey,
   });
 
   @override
@@ -50,17 +54,9 @@ class JobCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.bookmark_border, size: 20, color: Colors.grey),
-                      onPressed: onSave,
-                      tooltip: 'Save',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    const SizedBox(width: 12),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
-                      onPressed: onDelete,
-                      tooltip: 'Delete',
+                      icon: Icon(actionIcon, size: 24, color: actionIconColor),
+                      onPressed: onAction,
+                      tooltip: 'Action',
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
@@ -86,7 +82,26 @@ class JobCard extends StatelessWidget {
                   location,
                   style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade700),
                 ),
-                const Spacer(),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.attach_money, size: 16, color: Colors.green),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    salary,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: Colors.green.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+                const SizedBox(width: 8),
                 const Icon(Icons.access_time, size: 16, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
