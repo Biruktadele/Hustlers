@@ -39,14 +39,11 @@ class TelegramService:
                         button = message.reply_markup.rows[0].buttons[0]
                         if hasattr(button, 'url'):
                             deep_link = button.url
+                        
                     
-                    post = {
-                        'text': message.message,
-                        'date': message.date.isoformat(),
-                        'deep_link': deep_link
-                    }
-                    posts.append(post)
-
+                    message.deep_link = deep_link
+                    posts.append(message.__dict__)
+                # print(message)
             return posts
 
         finally:
