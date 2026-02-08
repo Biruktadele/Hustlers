@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from typing import List, Dict
 from app.services.telegram_service import telegram_service
+from app.services.singel_group_services.fetch_afriworkamharic import main as fetch_jobs
 
 router = APIRouter()
 
@@ -30,3 +31,14 @@ async def get_group_info(group_username: str):
         return info
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching group info: {str(e)}")
+
+@router.get("/jobs")
+async def get_jobs():
+    """
+    Fetch jobs from the Afriwork Amharic group.
+    """
+    try:
+        jobs = await fetch_jobs()
+        return jobs
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching jobs: {str(e)}")
