@@ -1,8 +1,9 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:hustlers_mobile/features/saved/presentation/pages/saved_page.dart';
 import '../../../analysis/presentation/pages/home_analysis_page.dart';
 import '../../../job_finder/presentation/pages/job_finder_page.dart';
-import '../../../saved/presentation/pages/saved_page.dart';
+import '../../../job_finder/presentation/pages/saved_page.dart';
 import '../../../resume/presentation/pages/resume_rater_page.dart';
 import '../../../about/presentation/pages/about_us_page.dart';
 
