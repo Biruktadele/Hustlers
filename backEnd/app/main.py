@@ -40,6 +40,7 @@ async def rate_limit_middleware(request: Request, call_next):
     return response
 
 app.include_router(telegram.router, prefix="/api/v1/telegram", tags=["telegram"])
+app.include_router(telegram.router, prefix="/api/tg", tags=["telegram"])
 app.include_router(map.router, prefix="/api/v1/map", tags=["map"])
 app.include_router(resume.router, prefix="/api/v1/resume", tags=["resume"])
 app.include_router(github.router, prefix="/api/v1/github", tags=["github"])
