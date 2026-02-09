@@ -23,9 +23,9 @@ class RepoModel {
       name: json['name'] ?? '',
       url: json['url'] ?? '',
       description: json['description'] ?? '',
-      scores: RepoScoresModel.fromJson(json['scores']),
+      scores: RepoScoresModel.fromJson(json['scores'] ?? {}),
       total: json['total'] ?? 0,
-      evidence: RepoEvidenceModel.fromJson(json['evidence']),
+      evidence: RepoEvidenceModel.fromJson(json['evidence'] ?? {}),
     );
   }
 
