@@ -8,6 +8,10 @@ class SavedJobModel {
   final String? expireDate;
   final String? postedAt;
   final String status;
+  final String location;
+  final String sex;
+  final String moreInfo;
+  final bool appliedCounted; // New
 
   SavedJobModel({
     required this.id,
@@ -19,6 +23,10 @@ class SavedJobModel {
     this.expireDate,
     this.postedAt,
     required this.status,
+    this.location = "Addis Ababa",
+    this.sex = "",
+    this.moreInfo = "",
+    this.appliedCounted = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -32,6 +40,10 @@ class SavedJobModel {
       'expierdate': expireDate,
       'posted_at': postedAt,
       'status': status,
+      'location': location,
+      'sex': sex,
+      'more_info': moreInfo,
+      'applied_counted': appliedCounted ? 1 : 0,
     };
   }
 
@@ -46,6 +58,10 @@ class SavedJobModel {
       expireDate: map['expierdate'] as String?,
       postedAt: map['posted_at'] as String?,
       status: map['status'] as String,
+      location: map['location'] as String? ?? "Addis Ababa",
+      sex: map['sex'] as String? ?? "",
+      moreInfo: map['more_info'] as String? ?? "",
+      appliedCounted: (map['applied_counted'] as int? ?? 0) == 1,
     );
   }
 }
