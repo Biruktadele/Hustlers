@@ -41,7 +41,7 @@ class JobCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    jobTitle,
+                    jobTitle.split(' ').take(2).join(' '),
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -79,7 +79,7 @@ class JobCard extends StatelessWidget {
                 const Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
-                  location,
+                  location.split(',').first, // Show only city part if location is "City, Country"
                   style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade700),
                 ),
               ],
