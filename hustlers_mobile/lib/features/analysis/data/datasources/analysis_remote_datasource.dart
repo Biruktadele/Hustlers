@@ -24,9 +24,10 @@ class AnalysisRemoteDataSourceImpl implements AnalysisRemoteDataSource {
     required String role,
     int limit = 5,
   }) async {
-    final uri = Uri.parse('https://hustlers-production.up.railway.app/hustler/ai/analyze');
+    final uri = Uri.parse('https://hustlers-production.up.railway.app/api/v1/resume/suggestions/pdf');
 
     var request = http.MultipartRequest('POST', uri);
+    request.headers['accept'] = 'application/json';
 
     request.fields['github_username'] = githubUsername;
     request.fields['role'] = role;
@@ -34,7 +35,7 @@ class AnalysisRemoteDataSourceImpl implements AnalysisRemoteDataSource {
 
     request.files.add(
       await http.MultipartFile.fromPath(
-        'resume',
+        'file',
         file.path,
       ),
     );
@@ -47,10 +48,14 @@ class AnalysisRemoteDataSourceImpl implements AnalysisRemoteDataSource {
         final jsonResponse = json.decode(response.body);
         return AnalysisResponseModel.fromJson(jsonResponse);
       } else {
-        throw Exception('Failed to analyze resume: ${response.statusCode} - ${response.body}');
+        throw Exception('Server Error (${response.statusCode}): ${response.body}');
       }
+    } on SocketException catch (e) {
+      throw Exception('Connection failed. Please check your internet: $e');
+    } on FormatException catch (e) {
+      throw Exception('Invalid response format: $e');
     } catch (e) {
-      throw Exception('Network error: $e');
+      throw Exception('Unexpected error: $e');
     }
   }
 }
