@@ -15,9 +15,9 @@ class AnalysisDataModel {
 
   factory AnalysisDataModel.fromJson(Map<String, dynamic> json) {
     return AnalysisDataModel(
-      resume: ResumeInfoModel.fromJson(json['resume']),
-      github: GithubInfoModel.fromJson(json['github']),
-      suggestions: SuggestionsModel.fromJson(json['suggestions']),
+      resume: ResumeInfoModel.fromJson(json['resume'] ?? {}),
+      github: GithubInfoModel.fromJson(json['github'] ?? {}),
+      suggestions: SuggestionsModel.fromJson(json['suggestions'] ?? {}),
     );
   }
 
