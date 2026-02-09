@@ -27,24 +27,23 @@ class SavedPage extends ConsumerWidget {
               final savedJob = savedJobs[index];
               return JobCard(
                 jobTitle: savedJob.jobName,
-                companyName: "Hustlers", // Fallback
-                location: "Addis Ababa", // Fallback
-                salary: _formatPrice(savedJob.price),
-                date: savedJob.postedAt != null 
-                    ? savedJob.postedAt!.split('T')[0] 
-                    : "Recently",
+                companyName: savedJob.moreInfo.isNotEmpty ? "See Details" : "Hustlers",
+                location: savedJob.location,
+                salary: savedJob.price,
+                date: savedJob.expireDate ?? "Recently",
                 actionIcon: Icons.delete_outline,
                 onViewDetail: () {
                    // Convert SavedJobModel back to JobModel for detail page
                    final job = JobModel(
-                      id: savedJob.id,
-                      jobName: savedJob.jobName,
+                      jobTitle: savedJob.jobName,
                       jobType: savedJob.jobType,
-                      price: savedJob.price,
-                      deepLink: savedJob.deepLink,
-                      jobDescription: savedJob.jobDescription,
-                      expireDate: savedJob.expireDate,
-                      postedAt: savedJob.postedAt,
+                      salary: savedJob.price,
+                      deeplink: savedJob.deepLink,
+                      description: savedJob.jobDescription,
+                      deadline: savedJob.expireDate ?? "",
+                      location: savedJob.location,
+                      sex: savedJob.sex,
+                      moreInfo: savedJob.moreInfo,
                    );
                    Navigator.push(
                     context,
@@ -71,8 +70,5 @@ class SavedPage extends ConsumerWidget {
     );
   }
 
-  String _formatPrice(String price) {
-    final numeric = price.replaceAll(RegExp(r'[^0-9.,-]'), '');
-    return numeric.isEmpty ? price : numeric;
-  }
+  // Helper removed as formatting is handled by API or Model
 }
