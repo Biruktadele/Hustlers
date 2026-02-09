@@ -5,9 +5,9 @@ from app.main import app
 client = TestClient(app)
 
 def test_map_endpoints():
-    print("--- Testing GET /api/v1/map/hotels/addis-ababa ---")
+    print("--- Testing GET /api/v1/map/search/nearby ---")
     # Using a small radius for faster testing
-    response = client.get("/api/v1/map/hotels/addis-ababa?radius=1000")
+    response = client.get("/api/v1/map/search/nearby?lat=9.0192&lon=38.7525&category=hotel&radius=1000")
     
     if response.status_code != 200:
         print(f"Error: {response.status_code}")
@@ -24,10 +24,11 @@ def test_map_endpoints():
     # Pick the first hotel to test insights
     sample_hotel = hotels[0]
     print(f"\nTesting insights for: {sample_hotel.get('name')}")
-    print(f"Hotel Data: {json.dumps(sample_hotel, indent=2)}")
+    # print(f"Hotel Data: {json.dumps(sample_hotel, indent=2)}")
 
-    print("\n--- Testing POST /api/v1/map/hotel/insights ---")
-    insight_response = client.post("/api/v1/map/hotel/insights", json=sample_hotel)
+    print("\n--- Testing POST /api/v1/map/company/insights ---")
+    # The endpoint is /company/insights but it takes general place data
+    insight_response = client.post("/api/v1/map/company/insights", json=sample_hotel)
     
     if insight_response.status_code == 200:
         insights = insight_response.json()
