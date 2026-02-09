@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../features/saved/data/models/saved_job_model.dart';
+import '../../features/job_finder/data/models/job_model.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase.instance;
@@ -12,6 +13,7 @@ class AppDatabase {
   static Database? _database;
 
   static const String tableSavedJobs = 'saved_jobs';
+  static const String tableCachedJobs = 'cached_jobs';
 
   AppDatabase._init();
 
@@ -27,7 +29,7 @@ class AppDatabase {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -48,6 +50,9 @@ class AppDatabase {
 
     // Create the saved jobs table
     await _createSavedJobsTable(db);
+    
+    // Create the cached jobs table
+    await _createCachedJobsTable(db);
 
     // Insert 365 rows for activity stats
     final batch = db.batch();
@@ -64,6 +69,18 @@ class AppDatabase {
     if (oldVersion < 2) {
       await _createSavedJobsTable(db);
     }
+    if (oldVersion < 3) {
+      await _createCachedJobsTable(db);
+    }
+    if (oldVersion < 4) {
+      // Add new columns to saved_jobs table
+      await db.execute('ALTER TABLE $tableSavedJobs ADD COLUMN location TEXT DEFAULT "Addis Ababa"');
+      await db.execute('ALTER TABLE $tableSavedJobs ADD COLUMN sex TEXT DEFAULT ""');
+      await db.execute('ALTER TABLE $tableSavedJobs ADD COLUMN more_info TEXT DEFAULT ""');
+    }
+    if (oldVersion < 5) {
+       await db.execute('ALTER TABLE $tableSavedJobs ADD COLUMN applied_counted INTEGER DEFAULT 0');
+    }
   }
 
   Future<void> _createSavedJobsTable(Database db) async {
@@ -77,9 +94,53 @@ class AppDatabase {
         jobdescrbiton TEXT,
         expierdate TEXT,
         posted_at TEXT,
-        status TEXT
+        status TEXT,
+        location TEXT,
+        sex TEXT,
+        more_info TEXT,
+        applied_counted INTEGER DEFAULT 0
       )
     ''');
+  }
+
+  Future<void> _createCachedJobsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE $tableCachedJobs (
+        job_title TEXT,
+        job_type TEXT,
+        location TEXT,
+        sex TEXT,
+        salary TEXT,
+        deadline TEXT,
+        description TEXT,
+        more_info TEXT,
+        deeplink TEXT PRIMARY KEY
+      )
+    ''');
+  }
+
+  // --- Cached Jobs Methods ---
+  
+  Future<void> cacheJobs(List<JobModel> jobs) async {
+    final db = await instance.database;
+    await db.transaction((txn) async {
+      await txn.delete(tableCachedJobs);
+      final batch = txn.batch();
+      for (final job in jobs) {
+        batch.insert(
+          tableCachedJobs, 
+          job.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
+  Future<List<JobModel>> getCachedJobs() async {
+    final db = await instance.database;
+    final result = await db.query(tableCachedJobs);
+    return result.map((json) => JobModel.fromMap(json)).toList();
   }
 
   // --- Saved Jobs Methods ---
