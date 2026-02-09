@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/models/analysis_response_model.dart';
 import '../../data/models/analysis_data_model.dart';
+import '../../data/models/resume_info_model.dart';
 import '../../data/models/suggestions_model.dart';
 import '../../data/models/github_info_model.dart';
 import '../../data/models/repo_model.dart';
@@ -14,6 +15,7 @@ class AnalysisResultPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = analysisResponse.data;
     final suggestions = data.suggestions;
+    final resume = data.resume;
 
     return Scaffold(
       appBar: AppBar(
@@ -25,6 +27,8 @@ class AnalysisResultPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (resume.name.isNotEmpty) _buildResumeHeader(resume),
+            const SizedBox(height: 16),
             _buildSummarySection(suggestions),
             const SizedBox(height: 16),
              _buildSectionTitle('Strengths & Gaps'),
@@ -54,6 +58,8 @@ class AnalysisResultPage extends StatelessWidget {
             _buildSectionTitle('Project Improvements'),
             const SizedBox(height: 8),
             _buildProjectImprovements(suggestions),
+            const SizedBox(height: 16),
+            _buildResumeDetails(resume),
           ],
         ),
       ),
@@ -67,6 +73,61 @@ class AnalysisResultPage extends StatelessWidget {
         fontSize: 20,
         fontWeight: FontWeight.bold,
         color: Colors.deepPurple,
+      ),
+    );
+  }
+
+  Widget _buildResumeHeader(ResumeInfoModel resume) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.deepPurple, Colors.deepPurple.shade700],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.deepPurple.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Colors.deepPurple),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      resume.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (resume.email.isNotEmpty)
+                      Text(
+                        resume.email,
+                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -318,6 +379,44 @@ class AnalysisResultPage extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildResumeDetails(ResumeInfoModel resume) {
+    return ExpansionTile(
+      title: const Text('Parsed Resume Details', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+      leading: const Icon(Icons.description_outlined, color: Colors.blueGrey),
+      children: [
+        _buildDetailsList('Skills', resume.skills),
+        _buildDetailsList('Experience', resume.experience),
+        _buildDetailsList('Education', resume.education),
+        _buildDetailsList('Projects', resume.projects),
+      ],
+    );
+  }
+
+  Widget _buildDetailsList(String title, List<String> items) {
+    if (items.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          const SizedBox(height: 4),
+          ...items.map((item) => Padding(
+            padding: const EdgeInsets.only(left: 8, bottom: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+                Expanded(child: Text(item, style: const TextStyle(fontSize: 13))),
+              ],
+            ),
+          )),
+          const Divider(),
+        ],
+      ),
     );
   }
 }
