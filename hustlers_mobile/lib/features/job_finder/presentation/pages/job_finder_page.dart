@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hustlers_mobile/features/saved/data/models/saved_job_model.dart';
@@ -17,6 +18,7 @@ class JobFinderPage extends ConsumerStatefulWidget {
 
 class _JobFinderPageState extends ConsumerState<JobFinderPage> {
   String selectedCity = "Addis Ababa";
+  Timer? _refreshTimer;
   final List<String> cities = [
     "Addis Ababa",
     "Adama",
@@ -25,6 +27,23 @@ class _JobFinderPageState extends ConsumerState<JobFinderPage> {
     "Dire Dawa",
     "Asosa"
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Automatically reload jobs every 8 hours while the app is open
+    _refreshTimer = Timer.periodic(const Duration(hours: 8), (timer) {
+      if (mounted) {
+        ref.refresh(jobListProvider);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,14 +130,15 @@ class _JobFinderPageState extends ConsumerState<JobFinderPage> {
           itemCount: jobs.length,
           itemBuilder: (context, index) {
             final job = jobs[index];
-            final isSaved = savedJobsAsync.asData?.value.any((s) => s.id == job.id) ?? false;
+            final jobId = job.deeplink.hashCode;
+            final isSaved = savedJobsAsync.asData?.value.any((s) => s.id == jobId) ?? false;
             
             return JobCard(
-              jobTitle: job.jobName,
-              companyName: "Hustlers", // Fallback as API doesn't provide company
-              location: "Addis Ababa", // Fallback
-              salary: _formatPrice(job.price),
-              date: job.postedAt != null ? job.postedAt!.split('T')[0] : "Recently",
+              jobTitle: job.jobTitle,
+              companyName: job.moreInfo.isNotEmpty ? "See Details" : "Hustlers", 
+              location: job.location,
+              salary: job.salary,
+              date: job.deadline,
               actionIcon: isSaved ? Icons.bookmark : Icons.bookmark_border,
               actionIconColor: isSaved ? Colors.deepPurple : Colors.grey,
               onViewDetail: () {
@@ -131,28 +151,31 @@ class _JobFinderPageState extends ConsumerState<JobFinderPage> {
               },
               onAction: () async {
                 if (isSaved) {
-                  await ref.read(savedJobsProvider.notifier).deleteJob(job.id);
+                  await ref.read(savedJobsProvider.notifier).deleteJob(jobId);
                    if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("${job.jobName} removed from favorites!")),
+                      SnackBar(content: Text("${job.jobTitle} removed from favorites!")),
                     );
                   }
                 } else {
                   final savedJob = SavedJobModel(
-                    id: job.id,
-                    jobName: job.jobName,
+                    id: jobId,
+                    jobName: job.jobTitle,
                     jobType: job.jobType,
-                    price: job.price,
-                    deepLink: job.deepLink,
-                    jobDescription: job.jobDescription,
-                    expireDate: job.expireDate,
-                    postedAt: job.postedAt,
+                    price: job.salary,
+                    deepLink: job.deeplink,
+                    jobDescription: job.description,
+                    expireDate: job.deadline,
+                    postedAt: null,
                     status: "Saved",
+                    location: job.location,
+                    sex: job.sex,
+                    moreInfo: job.moreInfo,
                   );
                   await ref.read(savedJobsProvider.notifier).saveJob(savedJob);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("${job.jobName} saved to favorites!")),
+                      SnackBar(content: Text("${job.jobTitle} saved to favorites!")),
                     );
                   }
                 }
