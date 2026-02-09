@@ -39,7 +39,7 @@ async def rate_limit_middleware(request: Request, call_next):
     response = await call_next(request)
     return response
 
-app.include_router(telegram.router, prefix="/api/v1/telegram", tags=["telegram"])
+# app.include_router(telegram.router, prefix="/api/v1/telegram", tags=["telegram"])
 app.include_router(telegram.router, prefix="/api/tg", tags=["telegram"])
 app.include_router(map.router, prefix="/api/v1/map", tags=["map"])
 app.include_router(resume.router, prefix="/api/v1/resume", tags=["resume"])
@@ -50,19 +50,19 @@ def read_root():
     return {"message": "Hustlers API is running"}
 
 # List all jobs endpoint
-@app.get("/api/jobs")
-def list_jobs(db: Session = Depends(get_db)):
-    try:
-        jobs = get_all_jobs(db)
-        return {"status": "success", "jobs": jobs}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+# @app.get("/api/jobs")
+# def list_jobs(db: Session = Depends(get_db)):
+#     try:
+#         jobs = get_all_jobs(db)
+#         return {"status": "success", "jobs": jobs}
+#     except Exception as e:
+#         return {"status": "error", "message": str(e)}
 
 # Cron job endpoint
-@app.post("/api/sync-jobs")
-async def run_sync_jobs():
-    try:
-        await sync_job_posts()
-        return {"status": "success", "message": "Job posts synced successfully"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+# @app.post("/api/sync-jobs")
+# async def run_sync_jobs():
+#     try:
+#         await sync_job_posts()
+#         return {"status": "success", "message": "Job posts synced successfully"}
+#     except Exception as e:
+#         return {"status": "error", "message": str(e)}
