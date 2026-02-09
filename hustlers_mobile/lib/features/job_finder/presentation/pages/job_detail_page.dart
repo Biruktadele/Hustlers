@@ -14,18 +14,19 @@ class JobDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final savedJobsAsync = ref.watch(savedJobsProvider);
-    final savedJob = savedJobsAsync.asData?.value.where((s) => s.id == job.id).firstOrNull;
+    final jobId = job.deeplink.hashCode;
+    final savedJob = savedJobsAsync.asData?.value.where((s) => s.id == jobId).firstOrNull;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: BeautifulAppBar(title: job.jobName),
+      appBar: BeautifulAppBar(title: job.jobTitle),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              job.jobName,
+              job.jobTitle,
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -43,7 +44,7 @@ class JobDetailPage extends ConsumerWidget {
             ),
              const SizedBox(height: 8),
             Text(
-              job.price,
+              job.salary,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: Colors.green.shade700,
@@ -68,12 +69,17 @@ class JobDetailPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (job.postedAt != null)
-                  _buildDetailRow(Icons.calendar_today, "Posted", job.postedAt!.split('T')[0]),
-                   if (job.expireDate != null)
+                  _buildDetailRow(Icons.location_on, "Location", job.location),
+                  const SizedBox(height: 12),
+                  if (job.sex.isNotEmpty) ...[
+                     _buildDetailRow(Icons.person, "Sex", job.sex),
+                     const SizedBox(height: 12),
+                  ],
+                  _buildDetailRow(Icons.calendar_today, "Deadline", job.deadline),
+                   if (job.moreInfo.isNotEmpty)
                    ...[
                     const SizedBox(height: 12),
-                    _buildDetailRow(Icons.event_busy, "Expires", job.expireDate!),
+                    _buildDetailRow(Icons.info_outline, "More Info", job.moreInfo),
                    ],
                 ],
               ),
@@ -88,7 +94,7 @@ class JobDetailPage extends ConsumerWidget {
             ),
              const SizedBox(height: 12),
             Text(
-              job.jobDescription,
+              job.description,
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 color: Colors.black54,
@@ -100,7 +106,7 @@ class JobDetailPage extends ConsumerWidget {
                width: double.infinity,
                height: 55,
                child: ElevatedButton(
-                 onPressed: () => _launchURL(job.deepLink),
+                 onPressed: () => _launchURL(job.deeplink),
                  style: ElevatedButton.styleFrom(
                    backgroundColor: Colors.deepPurple,
                    shape: RoundedRectangleBorder(
@@ -139,7 +145,7 @@ class JobDetailPage extends ConsumerWidget {
         buttonColor = Colors.blue;
         icon = Icons.send;
         nextStatus = "Applied";
-        onPressed = () =>  ref.read(savedJobsProvider.notifier).updateStatus(savedJob.id, nextStatus);
+        onPressed = () =>  ref.read(savedJobsProvider.notifier).markAsApplied(savedJob.id);
         break;
       case "Applied":
         buttonText = "Mark as Pending";
