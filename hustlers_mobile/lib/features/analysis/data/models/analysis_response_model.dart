@@ -11,8 +11,8 @@ class AnalysisResponseModel {
 
   factory AnalysisResponseModel.fromJson(Map<String, dynamic> json) {
     return AnalysisResponseModel(
-      status: json['status'],
-      data: AnalysisDataModel.fromJson(json['data']),
+      status: json['status'] ?? 'unknown',
+      data: AnalysisDataModel.fromJson(json['data'] ?? {}),
     );
   }
 
