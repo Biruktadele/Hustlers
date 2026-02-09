@@ -14,13 +14,13 @@ class JobRemoteDataSourceImpl implements JobRemoteDataSource {
   @override
   Future<List<JobModel>> getJobs() async {
     final response = await client.get(
-      Uri.parse('https://hustlers-production.up.railway.app/api/jobs'),
+      Uri.parse('https://hustlers-production.up.railway.app/api/tg/jobs'),
     );
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
       if (jsonResponse['status'] == 'success') {
-        final List<dynamic> jobsJson = jsonResponse['jobs'];
+        final List<dynamic> jobsJson = jsonResponse['data'];
         return jobsJson.map((json) => JobModel.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load jobs: API status not success');
