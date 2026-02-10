@@ -30,11 +30,26 @@ class CompanyModel {
       description: json['description'] ?? '',
       type: json['type'] ?? '',
       website: json['website'] ?? '',
-      phone: json['phone'] ?? '',
+      phone: (json['phone'] as String? ?? '').split(',').first.trim(),
       email: json['email'] ?? '',
       address: json['address'] ?? '',
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'type': type,
+      'website': website,
+      'phone': phone,
+      'email': email,
+      'address': address,
+      'latitude': latitude,
+      'longitude': longitude,
+    };
   }
 }
