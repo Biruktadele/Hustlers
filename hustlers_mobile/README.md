@@ -1,6 +1,9 @@
 # Hustlers Mobile 🚀
 
-**Hustlers Mobile** is a powerful Flutter application designed to empower job seekers, freelancers, and business development professionals. It goes beyond simple job searching by providing deep AI-driven insights into companies, helping users identify opportunities and crafting the perfect outreach pitch to land deals.
+**Hustlers Mobile** is a high-performance, cross-platform mobile application designed to bridge the gap between job seekers/freelancers and potential clients. Unlike traditional job boards, Hustlers Mobile leverages **Generative AI** to provide deep business intelligence on companies, identifying their pain points and auto-generating cold outreach pitches to help users land deals proactively.
+
+## 📋 Executive Summary
+A feature-rich Flutter application built with Clean Architecture that empowers users to go beyond simple job searching. It conducts specific "Deep Scans" on potential client companies to identify revenue leakage and digital presence gaps, then provides actionable solutions and outreach scripts.
 
 ## ✨ Key Features
 
@@ -30,20 +33,36 @@ Unlock the power of data with our advanced company analysis tool:
 *   **Responsive Design:** Optimized for mobile devices.
 *   **Beautiful Visuals:** Uses Google Fonts, gradients, and smooth animations.
 
-## 🛠️ Tech Stack
+## 🛠️ Core Competencies & Tech Stack
 
-This project is built using **Flutter** and follows a feature-first **Clean Architecture** approach.
+This project is built using **Flutter** (SDK >3.10) and follows a feature-first **Clean Architecture** approach, ensuring scalability and testability.
 
-*   **Framework:** [Flutter](https://flutter.dev/) & [Dart](https://dart.dev/)
+*   **Frameworks:** [Flutter](https://flutter.dev/) & [Dart](https://dart.dev/)
 *   **State Management:** [Riverpod](https://riverpod.dev/) (Hooks & Code Generation)
-*   **Networking:** `http`
-*   **Local Storage:** `shared_preferences`, `sqflite`
+*   **Architecture:** Feature-First Clean Architecture (Domain, Data, Presentation layers)
+*   **Networking:** `http` (RESTful API, Multipart/Form-Data, JSON parsing)
+*   **Data Persistence:** `sqflite` (Local Cache), `shared_preferences`
+*   **AI Integration:** LLM Response Parsing (Markdown/JSON cleaning & structured data mapping)
 *   **UI Components:** 
     *   `google_fonts`
-    *   `fl_chart` & `percent_indicator` for analytics
+    *   `fl_chart` & `percent_indicator` for data visualization
     *   `curved_navigation_bar`
     *   `smooth_page_indicator`
 *   **Utilities:** `url_launcher`, `file_picker`, `intl`
+
+## 🏗️ System Architecture & Engineering
+
+*   **Modular Design:** The codebase is strictly divided into functional features (`analysis`, `job_finder`, `dashboard`), preventing spaghetti code and enabling independent module testing.
+*   **Dependency Injection:** Uses Riverpod's logical separation to inject Repositories and Datasources, ensuring easy mocking and testing.
+*   **Robust Error Handling:** Implemented granular Exception handling for Socket, Format, and HTTP errors to ensure app stability during poor network conditions.
+*   **Deep Integration:**
+    *   **AI Business Analyst:** Integrates with custom backend endpoints (`/api/v1/map/company/insights`) to perform deep scans on companies.
+    *   **Resume Consultant:** Features a Multipart file upload system for PDF processing (`/api/v1/resume/suggestions/pdf`).
+
+## 📊 Performance Metrics
+
+*   **API Efficiency:** Optimized JSON parsing with safe-guards against complex LLM markdown responses.
+*   **UI Fluidity:** Heavy usage of `fl_chart` and `smooth_page_indicator` optimized for 60fps performance without main-thread blocking.
 
 ## 📂 Project Structure
 
