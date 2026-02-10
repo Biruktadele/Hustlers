@@ -74,8 +74,11 @@ class CompanySearchNotifier extends StateNotifier<CompanySearchState> {
     state = state.copyWith(companies: const AsyncValue.loading());
     try {
       final coords = cityCoordinates[state.location] ?? cityCoordinates["Addis Ababa"]!;
-      final radius = searchRadius[state.searchType] ?? 1000;
+      // Default to 5000 if key not found, as 1000 might be too small
+      final radius = searchRadius[state.searchType] ?? 5000;
       
+      // debugPrint("Searching: Location=${state.location}, Type=${state.companyType}, Radius=$radius");
+
       final result = await dataSource.getNearbyCompanies(
         lat: coords["lat"]!,
         lon: coords["lon"]!,
