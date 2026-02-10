@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hustlers_mobile/features/saved/data/models/saved_job_model.dart';
 import 'package:hustlers_mobile/features/saved/presentation/providers/saved_jobs_provider.dart';
+import '../../data/models/company_model.dart';
+import '../providers/company_provider.dart';
 import '../../../../core/presentation/widgets/custom_app_bar.dart';
 import '../widgets/job_card.dart';
 import '../widgets/company_card.dart';
@@ -196,132 +198,274 @@ class _JobFinderPageState extends ConsumerState<JobFinderPage> {
   }
 
   Widget _buildCompanyList(BuildContext context) {
-    // Mock Data for Companies with Ethiopian Context
-    final allCompanies = [
-      {
-        "name": "Ethio Telecom",
-        "location": "Addis Ababa",
-        "type": "Telecommunications",
-        "phone": "+251 115 500 000"
-      },
-      {
-        "name": "Commercial Bank of Ethiopia",
-        "location": "Addis Ababa",
-        "type": "Finance",
-        "phone": "+251 115 515 004"
-      },
-      {
-        "name": "Kuriftu Resort",
-        "location": "Adama",
-        "type": "Hospitality",
-        "phone": "+251 221 119 090"
-      },
-      {
-        "name": "Haile Resort",
-        "location": "Hawassa",
-        "type": "Hospitality",
-        "phone": "+251 462 201 228"
-      },
-      {
-        "name": "Avanti Blue Nile",
-        "location": "Bahir Dar",
-        "type": "Hospitality",
-        "phone": "+251 582 204 200"
-      },
-       {
-        "name": "Dire Dawa Textile",
-        "location": "Dire Dawa",
-        "type": "Manufacturing",
-        "phone": "+251 251 112 345"
-      },
-       {
-        "name": "Grand Asosa Hotel",
-        "location": "Asosa",
-        "type": "Hospitality",
-        "phone": "+251 577 750 001"
-      },
-    ];
-
-    // Filter based on selected city
-    // In a real app, you might strict filter. Here we ensure at least one matches or show all if city is "All" (if we had an All option)
-    // For now, let's just filter by the exact string. Use 'Addis Ababa' as default.
-    final companies = allCompanies.where((c) => c['location'] == selectedCity).toList();
-    // If empty for demo purposes fallback to all or empty list
-    final displayCompanies = companies.isEmpty ? allCompanies : companies;
+    final companyState = ref.watch(companySearchProvider);
 
     return Column(
       children: [
-        // City Selector
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade300),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _showFilterDialog(context, companyState),
+              icon: const Icon(Icons.tune),
+              label: const Text("Filter / Refresh Search"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-            ],
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              isExpanded: true,
-              value: selectedCity,
-              icon: const Icon(Icons.location_on, color: Colors.deepPurple),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-                fontFamily: 'Poppins', 
-              ),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    selectedCity = newValue;
-                  });
-                }
-              },
-              items: cities.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
             ),
           ),
         ),
-        
-        // List
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.only(top: 8, bottom: 80),
-            itemCount: displayCompanies.length,
-            itemBuilder: (context, index) {
-              final company = displayCompanies[index];
-              return CompanyCard(
-                companyName: company['name']!,
-                location: company['location']!,
-                companyType: company['type']!,
-                phoneNumber: company['phone']!,
-                 onViewDetail: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Details for ${company['name']} coming soon!")),
-                  );
-                },
-                onAction: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Company Saved!")),
+          child: companyState.companies.when(
+            data: (companies) {
+              if (companies.isEmpty) {
+                return const Center(
+                  child: Text("No companies found nearby."),
+                );
+              }
+              return ListView.builder(
+                padding: const EdgeInsets.only(top: 8, bottom: 80),
+                itemCount: companies.length,
+                itemBuilder: (context, index) {
+                  final company = companies[index];
+                  return CompanyCard(
+                    companyName: company.name,
+                    location: company.address.isNotEmpty
+                        ? company.address
+                        : "${company.latitude.toStringAsFixed(4)}, ${company.longitude.toStringAsFixed(4)}",
+                    companyType: company.type,
+                    phoneNumber: company.phone,
+                    onViewDetail: () {
+                      _showCompanyDetail(context, company);
+                    },
+                    onAction: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("${company.name} Saved!")),
+                      );
+                    },
                   );
                 },
               );
             },
+            error: (e, s) => Center(child: Text("Error: $e")),
+            loading: () => const Center(child: CircularProgressIndicator()),
           ),
         ),
       ],
     );
   }
+
+  void _showCompanyDetail(BuildContext context, CompanyModel company) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 50,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    company.name,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.deepPurple.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      company.type.toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.deepPurple.shade700,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  if (company.description.isNotEmpty) ...[
+                    const Text(
+                      "Description",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      company.description,
+                      style: const TextStyle(fontSize: 14, height: 1.5),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  _buildDetailRow(Icons.phone, "Phone", company.phone),
+                  _buildDetailRow(Icons.email, "Email", company.email),
+                  _buildDetailRow(Icons.web, "Website", company.website),
+                  _buildDetailRow(Icons.location_on, "Coordinates",
+                      "${company.latitude}, ${company.longitude}"),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    if (value.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.deepPurple, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFilterDialog(BuildContext context, CompanySearchState currentState) {
+    String location = currentState.location;
+    String companyType = currentState.companyType;
+    String searchType = currentState.searchType;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 20,
+                right: 20,
+                top: 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Search Parameters", style: Theme.of(context).textTheme.headlineSmall),
+                  const SizedBox(height: 20),
+                  _buildDropdown("Location", location, [
+                    "Addis Ababa", "Adama", "Bahir Dar", "Hawassa", "Mekelle", "Dire Dawa", "Gondar", "Jimma"
+                  ], (val) => setState(() => location = val!)),
+                  const SizedBox(height: 16),
+                  _buildDropdown("Company Type", companyType, [
+                    "Hotel", "Hospital", "Pharmacy", "Restaurant", "Cafe", "Gym", "School"
+                  ], (val) => setState(() => companyType = val!)),
+                  const SizedBox(height: 16),
+                  _buildDropdown("Find Type", searchType, [
+                    "Fast Find", "Normal Find", "Deep Large Scale Find"
+                  ], (val) => setState(() => searchType = val!)),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        ref.read(companySearchProvider.notifier).updateParams(
+                          location: location,
+                          companyType: companyType,
+                          searchType: searchType,
+                        );
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Search"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                         foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDropdown(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: items.contains(value) ? value : items.first,
+          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          ),
+        ),
+      ],
+    );
+  }
+
 }
