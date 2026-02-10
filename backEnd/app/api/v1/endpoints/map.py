@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from typing import List, Dict
+from typing import Any, Dict, List
 from app.services.map_service import map_service
 
 router = APIRouter()
@@ -16,7 +16,7 @@ async def get_addis_companies(lat: float = 9.0192, lon: float = 38.7525, radius:
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/search/nearby", response_model=List[Dict])
+@router.get("/search/nearby", response_model=Dict[str, Any])
 async def search_nearby(
     lat: float = 9.0192,
     lon: float = 38.7525,
@@ -30,7 +30,11 @@ async def search_nearby(
     """
     try:
         results = await map_service.get_nearby_places(lat, lon, category=category, radius=radius)
-        return results
+        return {
+            "status_code": 200,
+            "status": "success",
+            "data": results 
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -42,7 +46,11 @@ async def get_company_insights(company_data: Dict):
     """
     try:
         insights = await map_service.get_company_insights(company_data)
-        return insights
+        return {
+            "status_code": 200,
+            "status": "success",
+            "data": insights
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
