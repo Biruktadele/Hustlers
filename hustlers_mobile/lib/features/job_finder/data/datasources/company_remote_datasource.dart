@@ -29,7 +29,7 @@ class CompanyRemoteDataSource {
       headers: {'accept': 'application/json'},
     );
     // debugPrint('Request URL: ${uri.toString()}');
-    debugPrint('🧠🧠🧠🧠🧠Response Body: ${response.body}');
+    // debugPrint('🧠🧠🧠🧠🧠Response Body: ${response.body}');
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -51,7 +51,30 @@ class CompanyRemoteDataSource {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
-      return CompanyInsightModel.fromJson(jsonResponse['data']);
+      
+      dynamic data = jsonResponse['data'];
+
+      if (data is String) {
+        // Handle case where data is a string containing JSON (common with LLM responses)
+        String cleanedData = data.trim();
+        if (cleanedData.startsWith('```json')) {
+          cleanedData = cleanedData.replaceAll('```json', '').replaceAll('```', '');
+        } else if (cleanedData.startsWith('```')) {
+          cleanedData = cleanedData.replaceAll('```', '');
+        }
+        
+        try {
+          final parsedData = json.decode(cleanedData);
+          return CompanyInsightModel.fromJson(parsedData);
+        } catch (e) {
+             debugPrint('Failed to parse string data as JSON: $e');
+             throw Exception('Failed to parse insights data');
+        }
+      } else if (data is Map<String, dynamic>) {
+         return CompanyInsightModel.fromJson(data);
+      } else {
+        throw Exception('Unexpected data format: ${data.runtimeType}');
+      }
     } else {
       throw Exception('Failed to load company insights: ${response.statusCode}');
     }

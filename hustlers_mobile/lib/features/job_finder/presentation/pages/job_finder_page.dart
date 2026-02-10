@@ -5,9 +5,11 @@ import 'package:hustlers_mobile/features/saved/data/models/saved_job_model.dart'
 import 'package:hustlers_mobile/features/saved/presentation/providers/saved_jobs_provider.dart';
 import '../../data/models/company_model.dart';
 import '../providers/company_provider.dart';
+import '../providers/company_insights_provider.dart';
 import '../../../../core/presentation/widgets/custom_app_bar.dart';
 import '../widgets/job_card.dart';
 import '../widgets/company_card.dart';
+import '../widgets/company_detail_sheet.dart';
 import '../providers/job_provider.dart';
 import 'job_detail_page.dart';
 
@@ -265,119 +267,8 @@ class _JobFinderPageState extends ConsumerState<JobFinderPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (context, scrollController) {
-            return SingleChildScrollView(
-              controller: scrollController,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 50,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    company.name,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.deepPurple,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.deepPurple.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      company.type.toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.deepPurple.shade700,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  if (company.description.isNotEmpty) ...[
-                    const Text(
-                      "Description",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      company.description,
-                      style: const TextStyle(fontSize: 14, height: 1.5),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                  _buildDetailRow(Icons.phone, "Phone", company.phone),
-                  _buildDetailRow(Icons.email, "Email", company.email),
-                  _buildDetailRow(Icons.web, "Website", company.website),
-                  _buildDetailRow(Icons.location_on, "Coordinates",
-                      "${company.latitude}, ${company.longitude}"),
-                  const SizedBox(height: 40),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildDetailRow(IconData icon, String label, String value) {
-    if (value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: Colors.deepPurple, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      backgroundColor: Colors.transparent,
+      builder: (context) => CompanyDetailSheet(company: company),
     );
   }
 

@@ -46,6 +46,24 @@ class AnalysisRemoteDataSourceImpl implements AnalysisRemoteDataSource {
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
+        
+        // Handle potentially stringified 'data' field similar to CompanyRemoteDataSource
+        if (jsonResponse['data'] is String) {
+          try {
+            String cleanedData = (jsonResponse['data'] as String).trim();
+            if (cleanedData.startsWith('```json')) {
+              cleanedData = cleanedData.replaceAll('```json', '').replaceAll('```', '');
+            } else if (cleanedData.startsWith('```')) {
+              cleanedData = cleanedData.replaceAll('```', '');
+            }
+            jsonResponse['data'] = json.decode(cleanedData);
+          } catch (e) {
+            // If parsing fails, leave it as is, it might be a format intended for error or raw display
+            // But likely it will fail in fromJson if it expects a Map
+             throw Exception('Failed to pars nested JSON data');
+          }
+        }
+
         return AnalysisResponseModel.fromJson(jsonResponse);
       } else {
         throw Exception('Server Error (${response.statusCode}): ${response.body}');

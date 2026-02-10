@@ -194,20 +194,35 @@ class _ResumeRaterPageState extends ConsumerState<ResumeRaterPage> {
             ),
             
             const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: _submit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 3,
-                shadowColor: Colors.deepPurple.withOpacity(0.4),
-              ),
-              child: Text(
-                "Analyze Resume", 
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)
-              ),
+            Consumer(
+              builder: (context, ref, child) {
+                final state = ref.watch(analysisControllerProvider);
+                return SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: state.isLoading ? null : _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 3,
+                      shadowColor: Colors.deepPurple.withOpacity(0.4),
+                      disabledBackgroundColor: Colors.deepPurple.shade200,
+                    ),
+                    child: state.isLoading 
+                      ? const SizedBox(
+                          height: 24, 
+                          width: 24, 
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5)
+                        )
+                      : Text(
+                          "Analyze Resume", 
+                          style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)
+                        ),
+                  ),
+                );
+              },
             ),
           ],
         ),
