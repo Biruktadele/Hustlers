@@ -61,6 +61,10 @@ async def get_hotel_insights(hotel_data: Dict):
     """
     try:
         insights = await map_service.get_hotel_insights(hotel_data)
-        return insights
+        return {
+            "status_code": 200,
+            "status": "success",
+            "data": insights
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
